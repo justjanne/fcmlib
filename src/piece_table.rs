@@ -53,7 +53,7 @@ impl Encode for PieceTable {
             id.encode(buffer)?;
         }
         for (_, data) in &piece_data {
-            buffer.write(data)?;
+            buffer.write_all(data)?;
         }
 
         Ok(())

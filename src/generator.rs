@@ -46,11 +46,11 @@ impl Encode for Generator {
     fn encode(&self, buffer: &mut Vec<u8>) -> std::io::Result<()> {
         match self {
             Generator::App(version) => {
-                buffer.write("1APP".as_bytes())?;
+                buffer.write_all("1APP".as_bytes())?;
                 version.encode(buffer)?;
             }
             Generator::Web(version) => {
-                buffer.write("1WEB".as_bytes())?;
+                buffer.write_all("1WEB".as_bytes())?;
                 version.encode(buffer)?;
             }
             Generator::Device(id, version) => {

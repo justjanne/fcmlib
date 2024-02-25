@@ -59,7 +59,7 @@ pub(crate) fn read_path(input: &[u8]) -> IResult<&[u8], Path> {
 impl Encode for Path {
     fn encode(&self, buffer: &mut Vec<u8>) -> io::Result<()> {
         self.tool.encode(buffer)?;
-        buffer.write(
+        buffer.write_all(
             &self
                 .shape
                 .as_ref()

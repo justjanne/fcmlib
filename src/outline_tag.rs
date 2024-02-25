@@ -23,8 +23,8 @@ pub(crate) fn read_outline_tag(input: &[u8]) -> IResult<&[u8], OutlineTag> {
 impl Encode for OutlineTag {
     fn encode(&self, buffer: &mut Vec<u8>) -> std::io::Result<()> {
         match self {
-            OutlineTag::Line => buffer.write(&0u32.to_le_bytes())?,
-            OutlineTag::Bezier => buffer.write(&1u32.to_le_bytes())?,
+            OutlineTag::Line => buffer.write_all(&0u32.to_le_bytes())?,
+            OutlineTag::Bezier => buffer.write_all(&1u32.to_le_bytes())?,
         };
         Ok(())
     }

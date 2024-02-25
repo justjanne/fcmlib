@@ -23,8 +23,8 @@ pub(crate) fn read_file_type(input: &[u8]) -> IResult<&[u8], FileType> {
 impl Encode for FileType {
     fn encode(&self, buffer: &mut Vec<u8>) -> std::io::Result<()> {
         match self {
-            FileType::Cut => buffer.write(&0x10u32.to_le_bytes())?,
-            FileType::PrintAndCut => buffer.write(&0x38u32.to_le_bytes())?,
+            FileType::Cut => buffer.write_all(&0x10u32.to_le_bytes())?,
+            FileType::PrintAndCut => buffer.write_all(&0x38u32.to_le_bytes())?,
         };
         Ok(())
     }

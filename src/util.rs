@@ -1,17 +1,19 @@
-use crate::encode::Encode;
+use std::io::Write;
+
+use nom::{IResult, Parser};
 use nom::bytes::complete::{take, take_while};
 use nom::combinator::{map, map_parser, map_res};
 use nom::error::{ErrorKind, ParseError};
 use nom::multi::length_count;
 use nom::number::complete::{le_u16, le_u32, le_u8};
-use nom::{IResult, Parser};
-use std::io::Write;
+
+use crate::encode::Encode;
 
 pub(crate) fn bool32(input: &[u8]) -> IResult<&[u8], bool> {
     map(le_u32, |it| it != 0)(input)
 }
 
-pub(crate) fn read_utf8<'a>(input: &'a [u8]) -> IResult<&'a [u8], String> {
+pub(crate) fn read_utf8(input: &[u8]) -> IResult<&[u8], String> {
     match std::str::from_utf8(input) {
         Ok(data) => Ok((&input[0..0], String::from(data))),
         Err(_) => Err(nom::Err::Error(nom::error::ParseError::from_error_kind(
@@ -42,9 +44,9 @@ pub(crate) fn read_from_offsets<'a, O, E, A>(
     total_length: u32,
     mut f: A,
 ) -> impl FnMut(&'a [u8]) -> IResult<&'a [u8], Vec<O>, E>
-where
-    A: Parser<&'a [u8], O, E>,
-    E: ParseError<&'a [u8]>,
+    where
+        A: Parser<&'a [u8], O, E>,
+        E: ParseError<&'a [u8]>,
 {
     move |input: &[u8]| {
         let mut pieces = Vec::new();
@@ -77,8 +79,8 @@ pub fn write_utf16_str(data: &str, buffer: &mut Vec<u8>) -> std::io::Result<()> 
 
 pub fn write_utf8_fixed(data: &str, buffer: &mut Vec<u8>) -> std::io::Result<()> {
     let mut result: Vec<u8> = vec![];
-    result.write(data.as_bytes())?;
-    result.write(&[0, 0, 0, 0, 0, 0, 0, 0])?;
-    buffer.write(&result[0..8])?;
+    result.write_all(data.as_bytes())?;
+    result.write_all(&[0, 0, 0, 0, 0, 0, 0, 0])?;
+    buffer.write_all(&result[0..8])?;
     Ok(())
 }

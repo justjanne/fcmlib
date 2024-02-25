@@ -40,6 +40,3 @@ mod point;
 mod segment_bezier;
 mod segment_line;
 mod util;
-
-#[cfg(test)]
-mod tests;

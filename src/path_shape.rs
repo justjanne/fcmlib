@@ -18,7 +18,7 @@ pub fn read_path_shape<'a>(
     cond(
         outline_count > 0,
         map(
-            tuple((read_point, count(read_outline, outline_count as usize))),
+            tuple((read_point, count(read_outline, outline_count))),
             move |(start, outlines)| PathShape { start, outlines },
         ),
     )

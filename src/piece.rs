@@ -102,7 +102,7 @@ impl Encode for Piece {
             0u32.encode(buffer)?;
         } else {
             1u8.encode(buffer)?;
-            buffer.write(&self.label.as_bytes()[0..3])?;
+            buffer.write_all(&self.label.as_bytes()[0..3])?;
         }
 
         let mut path_data: Vec<Vec<u8>> = vec![];
@@ -113,7 +113,7 @@ impl Encode for Piece {
         (path_data.len() as u32).encode(buffer)?;
         for path in path_data {
             (path.len() as u32).encode(buffer)?;
-            buffer.write(&path)?;
+            buffer.write_all(&path)?;
         }
 
         Ok(())

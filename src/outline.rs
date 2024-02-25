@@ -27,14 +27,14 @@ pub(crate) fn read_outline(input: &[u8]) -> IResult<&[u8], Outline> {
 fn read_outline_line(input: &[u8]) -> IResult<&[u8], Outline> {
     map(
         length_count(le_u32, segment_line::read_segment_line),
-        |segments| Outline::Line(segments),
+        Outline::Line,
     )(input)
 }
 
 fn read_outline_bezier(input: &[u8]) -> IResult<&[u8], Outline> {
     map(
         length_count(le_u32, segment_bezier::read_segment_bezier),
-        |segments| Outline::Bezier(segments),
+        Outline::Bezier,
     )(input)
 }
 
@@ -43,14 +43,14 @@ impl Encode for Outline {
         match self {
             Outline::Line(segments) => {
                 OutlineTag::Line.encode(buffer)?;
-                buffer.write(&(segments.len() as u32).to_le_bytes())?;
+                buffer.write_all(&(segments.len() as u32).to_le_bytes())?;
                 for segment in segments {
                     segment.encode(buffer)?;
                 }
             }
             Outline::Bezier(segments) => {
                 OutlineTag::Bezier.encode(buffer)?;
-                buffer.write(&(segments.len() as u32).to_le_bytes())?;
+                buffer.write_all(&(segments.len() as u32).to_le_bytes())?;
                 for segment in segments {
                     segment.encode(buffer)?;
                 }

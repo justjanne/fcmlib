@@ -86,7 +86,7 @@ pub(crate) fn read_file_header(input: &[u8]) -> IResult<&[u8], FileHeader> {
 impl Encode for FileHeader {
     fn encode(&self, buffer: &mut Vec<u8>) -> std::io::Result<()> {
         self.variant.encode(buffer)?;
-        buffer.write(&self.version.as_bytes()[0..4])?;
+        buffer.write_all(&self.version.as_bytes()[0..4])?;
         self.content_id.encode(buffer)?;
 
         let mut variable_header: Vec<u8> = vec![];
@@ -101,7 +101,7 @@ impl Encode for FileHeader {
         self.thumbnail_block_size_height
             .encode(&mut variable_header)?;
         (self.thumbnail.len() as u32).encode(&mut variable_header)?;
-        variable_header.write(&self.thumbnail)?;
+        variable_header.write_all(&self.thumbnail)?;
 
         self.generator.encode(&mut variable_header)?;
         if let Some(print_to_cut) = &self.print_to_cut {
@@ -109,7 +109,7 @@ impl Encode for FileHeader {
         }
 
         (variable_header.len() as u32).encode(buffer)?;
-        buffer.write(&variable_header)?;
+        buffer.write_all(&variable_header)?;
 
         Ok(())
     }

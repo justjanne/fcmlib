@@ -27,7 +27,7 @@ pub(crate) fn read_piece_restrictions(input: &[u8]) -> IResult<&[u8], PieceRestr
 
 impl Encode for PieceRestrictions {
     fn encode(&self, buffer: &mut Vec<u8>) -> std::io::Result<()> {
-        buffer.write(&self.bits().to_le_bytes())?;
+        buffer.write_all(&self.bits().to_le_bytes())?;
         Ok(())
     }
 }

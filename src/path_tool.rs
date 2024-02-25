@@ -30,8 +30,8 @@ pub fn read_path_tool(input: &[u8]) -> IResult<&[u8], PathTool> {
 
 impl Encode for PathTool {
     fn encode(&self, buffer: &mut Vec<u8>) -> std::io::Result<()> {
-        buffer.write(&4u32.to_le_bytes())?;
-        buffer.write(&self.bits().to_le_bytes())?;
+        buffer.write_all(&4u32.to_le_bytes())?;
+        buffer.write_all(&self.bits().to_le_bytes())?;
         Ok(())
     }
 }
