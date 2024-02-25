@@ -10,7 +10,6 @@ pub mod generator;
 pub mod outline;
 mod outline_tag;
 pub mod path;
-pub mod path_rhinestones;
 pub mod path_shape;
 pub mod path_tool;
 pub mod piece;
