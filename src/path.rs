@@ -2,16 +2,16 @@ use std::io;
 use std::io::Write;
 
 use nom::combinator::{flat_map, map};
-use nom::IResult;
 use nom::multi::{count, length_value};
 use nom::number::complete::le_u32;
 use nom::sequence::tuple;
+use nom::IResult;
 
-use crate::{path_shape, path_tool};
 use crate::encode::Encode;
 use crate::path_shape::PathShape;
 use crate::path_tool::PathTool;
-use crate::point::{Point, read_point};
+use crate::point::{read_point, Point};
+use crate::{path_shape, path_tool};
 
 #[derive(Debug)]
 pub struct Path {
