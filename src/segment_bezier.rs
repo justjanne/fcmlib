@@ -1,3 +1,4 @@
+use crate::encode::Encode;
 use crate::point::{read_point, Point};
 use nom::combinator::map;
 use nom::sequence::tuple;
@@ -19,4 +20,13 @@ pub(crate) fn read_segment_bezier(input: &[u8]) -> IResult<&[u8], SegmentBezier>
             end,
         },
     )(input)
+}
+
+impl Encode for SegmentBezier {
+    fn encode(&self, buffer: &mut Vec<u8>) -> std::io::Result<()> {
+        self.control1.encode(buffer)?;
+        self.control2.encode(buffer)?;
+        self.end.encode(buffer)?;
+        Ok(())
+    }
 }

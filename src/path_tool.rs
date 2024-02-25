@@ -1,7 +1,11 @@
+use std::io::Write;
+
 use bitflags::bitflags;
 use nom::combinator::map_opt;
 use nom::number::complete::le_u32;
 use nom::IResult;
+
+use crate::encode::Encode;
 
 bitflags! {
     #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -22,4 +26,12 @@ bitflags! {
 }
 pub fn read_path_tool(input: &[u8]) -> IResult<&[u8], PathTool> {
     map_opt(le_u32, PathTool::from_bits)(input)
+}
+
+impl Encode for PathTool {
+    fn encode(&self, buffer: &mut Vec<u8>) -> std::io::Result<()> {
+        buffer.write(&4u32.to_le_bytes())?;
+        buffer.write(&self.bits().to_le_bytes())?;
+        Ok(())
+    }
 }

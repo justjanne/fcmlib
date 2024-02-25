@@ -19,5 +19,9 @@ pub mod segment_bezier;
 pub mod segment_line;
 mod util;
 
+mod alignment_data;
+mod encode;
+mod piece_restrictions;
+mod piece_table;
 #[cfg(test)]
 mod tests;

@@ -1,12 +1,7 @@
-use std::fs::read;
-
-use crate::fcm_file::{FcmFile, read_fcm_file};
+use crate::fcm_file::FcmFile;
 
 fn read_file(path: &str) -> FcmFile {
-    let file = read(path).expect(format!("could not open file: {path}").as_str());
-    let (_, file) =
-        read_fcm_file(file.as_slice()).expect(format!("could not parse file: {path}").as_str());
-    file
+    FcmFile::from_file(path).unwrap()
 }
 
 #[test]
@@ -5642,4 +5637,12 @@ fn parses_test_text() {
 #[test]
 fn parses_test_thicc() {
     read_file("samples/test/thicc.fcm");
+}
+
+#[test]
+fn roundtrips_test_square() {
+    let original = std::fs::read("samples/test/square.fcm").unwrap();
+    let parsed = FcmFile::from_bytes(original.as_slice()).unwrap();
+    let serialized = parsed.to_bytes().unwrap();
+    std::fs::write("samples/test/square_roundtrip.fcm", serialized).unwrap();
 }

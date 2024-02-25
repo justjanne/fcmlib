@@ -1,30 +1,17 @@
-use bitflags::bitflags;
+use std::io::Write;
+
 use nom::bytes::complete::take;
-use nom::combinator::{cond, flat_map, map, map_opt, map_res};
+use nom::combinator::{cond, flat_map, map, map_res};
 use nom::multi::{length_count, length_data, length_value};
-use nom::number::complete::{le_f32, le_u16, le_u32};
+use nom::number::complete::{le_f32, le_u32};
 use nom::sequence::tuple;
 use nom::IResult;
 
-use crate::path;
+use crate::encode::Encode;
 use crate::path::Path;
-use crate::util::{bool32, read_from_offsets};
-
-pub fn read_piece_table(input: &[u8]) -> IResult<&[u8], Vec<(u16, Piece)>> {
-    flat_map(
-        tuple((
-            length_count(le_u32, le_u32),
-            le_u32,
-            length_count(le_u32, le_u16),
-        )),
-        move |(offsets, total_length, ids)| {
-            map(
-                read_from_offsets(offsets, total_length, read_piece),
-                move |pieces| ids.clone().into_iter().zip(pieces).collect(),
-            )
-        },
-    )(input)
-}
+use crate::piece_restrictions::PieceRestrictions;
+use crate::util::bool32;
+use crate::{path, piece_restrictions};
 
 #[derive(Debug)]
 pub struct Piece {
@@ -52,7 +39,7 @@ pub(crate) fn read_piece(input: &[u8]) -> IResult<&[u8], Piece> {
             }),
             le_u32,
             le_u32,
-            read_piece_restrictions,
+            piece_restrictions::read_piece_restrictions,
             read_piece_label,
             length_count(le_u32, length_value(le_u32, path::read_path)),
         )),
@@ -79,25 +66,6 @@ pub(crate) fn read_piece(input: &[u8]) -> IResult<&[u8], Piece> {
     )(input)
 }
 
-bitflags! {
-    #[derive(Debug, Copy, Clone, PartialEq, Eq)]
-    pub struct PieceRestrictions: u32 {
-            const LICENSE_DESIGN = 0x0001;
-            const SEAM_ALLOWANCE = 0x0002;
-            const PROHIBITION_OF_SEAM_ALLOWANCE_SETTING = 0x0004;
-            const NO_ASPECT_RATIO_CHANGE_PROHIBITED = 0x0020;
-            const JUDGE_BY_USING_PERFECT_MASK_AT_AUTO_LAYOUT = 0x0020;
-            const TEST_PATTERN = 0x0040;
-            const PROHIBITION_OF_EDIT = 0x0080;
-            const PROHIBITION_OF_TOOL = 0x0100;
-            const _ = !0;
-    }
-}
-
-fn read_piece_restrictions(input: &[u8]) -> IResult<&[u8], PieceRestrictions> {
-    map_opt(le_u32, PieceRestrictions::from_bits)(input)
-}
-
 fn read_piece_label(input: &[u8]) -> IResult<&[u8], String> {
     map_res(length_data(le_u32), |label_data: &[u8]| {
         if label_data[0] == 1 {
@@ -106,4 +74,48 @@ fn read_piece_label(input: &[u8]) -> IResult<&[u8], String> {
             Ok(String::new())
         }
     })(input)
+}
+
+impl Encode for Piece {
+    fn encode(&self, buffer: &mut Vec<u8>) -> std::io::Result<()> {
+        0u32.encode(buffer)?;
+        0u32.encode(buffer)?;
+        self.width.encode(buffer)?;
+        self.height.encode(buffer)?;
+        if let Some(transform) = self.transform {
+            1u32.encode(buffer)?;
+            transform.0.encode(buffer)?;
+            transform.1.encode(buffer)?;
+            transform.2.encode(buffer)?;
+            transform.3.encode(buffer)?;
+            transform.4.encode(buffer)?;
+            transform.5.encode(buffer)?;
+        } else {
+            0u32.encode(buffer)?;
+        }
+        self.expansion_limit_value.encode(buffer)?;
+        self.reduction_limit_value.encode(buffer)?;
+        self.restriction_flags.encode(buffer)?;
+
+        4u32.encode(buffer)?;
+        if self.label.is_empty() {
+            0u32.encode(buffer)?;
+        } else {
+            1u8.encode(buffer)?;
+            buffer.write(&self.label.as_bytes()[0..3])?;
+        }
+
+        let mut path_data: Vec<Vec<u8>> = vec![];
+        for path in &self.paths {
+            path_data.push(path.encode_to_vec()?);
+        }
+
+        (path_data.len() as u32).encode(buffer)?;
+        for path in path_data {
+            (path.len() as u32).encode(buffer)?;
+            buffer.write(&path)?;
+        }
+
+        Ok(())
+    }
 }

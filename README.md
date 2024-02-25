@@ -3,10 +3,6 @@
 This project contains a fully fledged parser for Brother's FCM format,
 written in Rust using Nom.
 
-## Roadmap
-
-- Writing FCM files
-
 ## License
 
 > This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.  

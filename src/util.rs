@@ -1,9 +1,11 @@
+use crate::encode::Encode;
 use nom::bytes::complete::{take, take_while};
 use nom::combinator::{map, map_parser, map_res};
 use nom::error::{ErrorKind, ParseError};
 use nom::multi::length_count;
 use nom::number::complete::{le_u16, le_u32, le_u8};
 use nom::{IResult, Parser};
+use std::io::Write;
 
 pub(crate) fn bool32(input: &[u8]) -> IResult<&[u8], bool> {
     map(le_u32, |it| it != 0)(input)
@@ -61,4 +63,22 @@ where
         }
         Ok((&input[total_length as usize..], pieces))
     }
+}
+
+pub fn write_utf16_str(data: &str, buffer: &mut Vec<u8>) -> std::io::Result<()> {
+    let mut data = String::from(data);
+    data.truncate(255);
+    (data.len() as u8).encode(buffer)?;
+    for char in data.encode_utf16() {
+        char.encode(buffer)?;
+    }
+    Ok(())
+}
+
+pub fn write_utf8_fixed(data: &str, buffer: &mut Vec<u8>) -> std::io::Result<()> {
+    let mut result: Vec<u8> = vec![];
+    result.write(data.as_bytes())?;
+    result.write(&[0, 0, 0, 0, 0, 0, 0, 0])?;
+    buffer.write(&result[0..8])?;
+    Ok(())
 }
