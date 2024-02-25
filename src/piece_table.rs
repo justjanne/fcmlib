@@ -13,7 +13,7 @@ use crate::util::read_from_offsets;
 
 #[derive(Debug)]
 pub struct PieceTable {
-    pieces: Vec<(u16, Piece)>,
+    pub pieces: Vec<(u16, Piece)>,
 }
 
 pub fn read_piece_table(input: &[u8]) -> IResult<&[u8], PieceTable> {
